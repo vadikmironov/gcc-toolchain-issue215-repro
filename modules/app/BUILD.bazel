@@ -1,0 +1,30 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+
+# The repro of gcc-toolchain#215. --config=gcc_hermetic adds -Wall and the
+# .bazelrc adds -Werror on Linux; see README.md for the three runs.
+
+# Our own header, exposed through `includes` (//modules/mylib). Its -Wall warning
+# must fail the build.
+cc_binary(
+    name = "own_header",
+    srcs = ["own_header.cc"],
+    deps = ["//modules/mylib"],
+)
+
+# abseil with angle brackets, as in the report. -Wuseless-cast fires in
+# absl/strings/ascii.h, so the build also fails if abseil's headers are not
+# system headers.
+cc_binary(
+    name = "absl_angle",
+    srcs = ["absl_angle.cc"],
+    copts = ["-Werror=useless-cast"],
+    deps = ["@abseil-cpp//absl/strings"],
+)
+
+# The same with quotes: found through -iquote, so only the warning remains.
+cc_binary(
+    name = "absl_quote",
+    srcs = ["absl_quote.cc"],
+    copts = ["-Werror=useless-cast"],
+    deps = ["@abseil-cpp//absl/strings"],
+)

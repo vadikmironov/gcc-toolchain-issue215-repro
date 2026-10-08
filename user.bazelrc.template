@@ -1,0 +1,23 @@
+##
+## Local developer overrides — copy this file to 'user.bazelrc'
+##
+##   cp user.bazelrc.template user.bazelrc
+##
+## user.bazelrc is gitignored and loaded automatically via try-import in .bazelrc
+##
+
+##
+## Shared repository cache
+##
+## Share extracted external libraries (Maven JARs, LLVM, JDK, etc.) across
+## multiple Bazel workspaces on the same machine. Avoids redundant downloads
+## when several projects use the same dependencies.
+## https://github.com/bazelbuild/bazel/issues/12227
+##
+common --repository_cache=~/.cache/bazel/repo-cache
+
+##
+## Personal preferences (examples)
+##
+# build --jobs=8
+# test --test_output=all

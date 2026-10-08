@@ -1,0 +1,75 @@
+module(
+    name = "gcc-toolchain-issue215-repro",
+    version = "0.0.1",
+    bazel_compatibility = [">=8.0.0"],
+    repo_name = "gcc-toolchain-issue215-repro",
+)
+
+#
+# platforms block (custom C++ toolchains dependency)
+#
+# Bazel Platforms houses all canonical constraint_setting()s, constraint_value()s
+# and platform()s that are universally useful across languages and Bazel projects.
+#
+bazel_dep(name = "platforms", version = "1.1.0")
+
+#
+# bazel_skylib block (rules_lint dependency)
+#
+# Skylib is a library of Starlark functions for manipulating collections, file
+# paths, and various other data types in the domain of Bazel build rules.
+#
+bazel_dep(name = "bazel_skylib", version = "1.9.2")
+
+#
+# rules_shell block
+#
+# This module contains the Bazel ruleset for shell scripts.
+#
+# Please find documentation here:
+# https://github.com/bazelbuild/rules_shell/releases
+#
+bazel_dep(name = "rules_shell", version = "0.8.0")
+
+#
+# Install a prebuilt version of buildifier. Buildifier is a linter and autoformatter
+# for starlark files.
+# https://github.com/keith/buildifier-prebuilt/releases
+#
+bazel_dep(name = "buildifier_prebuilt", version = "10.1.0", dev_dependency = True)
+
+#
+# aspect_rules_lint block
+#
+# This ruleset integrates linting and formatting as first-class concepts under Bazel.
+# Used for Python (ruff), C++ (clang-tidy) and Java (pmd, spotbugs). Rust uses native
+# rules_rust clippy instead (See //tools/lint:linters.bzl).
+#
+# Please find documentation here:
+# https://github.com/aspect-build/rules_lint/releases
+#
+bazel_dep(name = "aspect_rules_lint", version = "2.9.1")
+
+# Temporary floor, not a dependency: buf is unused here. aspect_rules_lint 2.9.1
+# pins rules_buf 0.5.2, whose rules_go 0.42.0 still uses the native CcInfo
+# symbol Bazel 9 removed, so any selection without Go fails at toolchain
+# resolution. rules_buf 0.5.4 moves to rules_go 0.59.0, which loads CcInfo from
+# rules_cc. Drop this once aspect_rules_lint depends on rules_buf >= 0.5.4.
+# https://github.com/aspect-build/rules_lint/blob/v2.9.1/MODULE.bazel#L45
+# https://github.com/bufbuild/rules_buf/blob/v0.5.4/MODULE.bazel#L26
+bazel_dep(name = "rules_buf", version = "0.5.4")
+
+#
+# LLVM toolchain bazel modules shard which is shared by C++ (default C/C++
+# toolchain) and Java (clang-format is the formatter for Java and C++).
+#
+include("//tools/cpp:llvm_segment.MODULE.bazel")
+
+#
+# C++ bazel modules shard
+#
+include("//tools/cpp:cpp_segment.MODULE.bazel")
+include("//tools/cpp:cpp_3rd_party_dependencies.MODULE.bazel")
+
+# The cmake and ninja prebuilts rules_foreign_cc lacks on Windows ARM64.
+include("//tools/cpp/foreign_cc:foreign_cc_tools.MODULE.bazel")

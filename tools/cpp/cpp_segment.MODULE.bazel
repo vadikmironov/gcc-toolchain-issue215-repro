@@ -1,0 +1,75 @@
+#
+# rules_cc block
+#
+# This repository contains a Starlark implementation of C++ rules in Bazel.
+#
+# Please find documentation here:
+# https://github.com/bazelbuild/rules_cc/releases
+#
+bazel_dep(name = "rules_cc", version = "0.2.26")
+
+#
+# rules_foreign_cc block
+#
+# Builds libraries that ship their own non-Bazel build system (CMake, Make,
+# Autotools) from source and exposes the result as a cc_library-compatible
+# target. Ships prebuilt hermetic cmake and ninja toolchains, so no host
+# install is required. Fetch the library's source as an http_archive in the
+# module that consumes it.
+#
+# Please find documentation here:
+# https://github.com/bazel-contrib/rules_foreign_cc/releases
+#
+bazel_dep(name = "rules_foreign_cc", version = "0.16.0")
+
+# One fix against 0.16.0, backported verbatim from an open pull request:
+#
+#   postfixed_outputs cmake() matched declared outputs literally, so a build
+#                     whose library picks up a suffix (CMAKE_DEBUG_POSTFIX
+#                     under -c dbg) could not be named. Resolves the real file
+#                     from the CMake File API codemodel instead.
+#                     https://github.com/bazel-contrib/rules_foreign_cc/issues/1041
+#
+# 0.16.0 cleared the rest. cc_import_load shipped in it, and the three
+# pkg-config patches went earlier: the release replaces the glib-linked
+# bootstrap with the pkgconf registry module, so nothing builds glib now.
+single_version_override(
+    module_name = "rules_foreign_cc",
+    patch_strip = 1,
+    patches = [
+        "//tools/cpp/patches:rules_foreign_cc_0.16.0_postfixed_outputs.patch",
+    ],
+)
+
+#
+# Hermetic GCC toolchain (f0rmiga/gcc-toolchain), complementing the default
+# hermetic LLVM/Clang (llvm_segment.MODULE.bazel). Selected on demand via
+# `--config=gcc_hermetic`; not register_toolchains()'d, so Clang stays default
+# (the config's --extra_toolchains outranks the registered LLVM).
+#
+# Please find documentation here:
+# https://github.com/f0rmiga/gcc-toolchain/releases
+#
+bazel_dep(name = "gcc_toolchain", version = "0.13.0")
+
+# This toolchain hand-rolls its cc_toolchain_config instead of delegating to
+# rules_cc's unix_cc_toolchain_config, and never implemented
+# external_include_paths. The .bazelrc --features=external_include_paths is
+# therefore a silent no-op here, and external headers arrive as -I/-iquote
+# rather than -isystem, so their warnings hit our -Werror build.
+# https://github.com/f0rmiga/gcc-toolchain/issues/215
+single_version_override(
+    module_name = "gcc_toolchain",
+    patch_strip = 1,
+    patches = ["//tools/cpp/patches:gcc_toolchain_0.13.0_external_include_paths.patch"],
+)
+
+gcc_toolchains = use_extension("@gcc_toolchain//toolchain:module_extensions.bzl", "gcc_toolchains")
+gcc_toolchains.toolchain(
+    name = "gcc_toolchain_x86_64",
+    # Pin the GCC version explicitly (module default is 16.1.0). Available:
+    # 12.5.0, 13.4.0, 14.3.0, 15.2.0, 16.1.0.
+    gcc_version = "15.2.0",
+    target_arch = "x86_64",
+)
+use_repo(gcc_toolchains, "gcc_toolchain_x86_64")

@@ -1,0 +1,23 @@
+#
+# This file is a MODULE.bazel shard that captures all third-party dependencies
+# for C++ applications in this repository. This includes only dependencies that
+# are registered in the [Bazel Central Registry](https://registry.bazel.build/),
+# For libraries that are not registered there it is possible to use the
+# [rules_foreign_cc](https://github.com/bazel-contrib/rules_foreign_cc).
+#
+
+#
+# BCR page: https://registry.bazel.build/modules/googletest
+# Googletest home page: https://github.com/google/googletest
+# Documentation: https://google.github.io/googletest/primer.html
+#
+bazel_dep(name = "googletest", version = "1.18.0.bcr.1")
+
+# --- BEGIN user-managed ---
+# Your C++ bazel_dep(...) / single_version_override(...) entries.
+# Preserved across re-bootstrap.
+
+# The third-party library of the repro: its headers are found relative to the
+# repository root, and it has no `includes` attribute.
+bazel_dep(name = "abseil-cpp", version = "20260817.0")
+# --- END user-managed ---

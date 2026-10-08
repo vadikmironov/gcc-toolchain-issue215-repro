@@ -1,0 +1,129 @@
+
+# NOTE: project-wide and per-developer overrides are imported at the end of
+# the file.
+
+##
+## Generic flags for all languages
+##
+
+# Use GitHub mirror for BCR to work around bcr.bazel.build outages
+# common --registry=https://raw.githubusercontent.com/bazelbuild/bazel-central-registry/main/
+
+# Disabling runfiles links drastically increases performance in slow disk IO situations
+# Do not build runfile trees by default. If an execution strategy relies on runfile
+# symlink tree, the tree is created on-demand. See: https://github.com/bazelbuild/bazel/issues/6627
+# and https://github.com/bazelbuild/bazel/commit/03246077f948f2790a83520e7dccc2625650e6df
+build --nobuild_runfile_links
+test --nobuild_runfile_links
+
+# https://bazel.build/reference/command-line-reference#flag--legacy_external_runfiles
+build --nolegacy_external_runfiles
+test --nolegacy_external_runfiles
+
+test --test_output=errors
+
+# Performance test configuration - shows full test output including throughput stats
+test:perf --test_output=all
+
+# Downloader configuration for URL rewriting and blocking
+# https://bazel.build/versions/8.5.0/reference/command-line-reference#flag--downloader_config
+common --downloader_config=bazel_downloader.cfg
+
+# Enable automatic platform-specific configuration
+# This automatically applies --config=linux, --config=macos, or --config=windows
+# based on the host OS. See:
+# https://bazel.build/reference/command-line-reference#common_options-flag--enable_platform_specific_config
+common --enable_platform_specific_config
+
+# Opt out of aspect_tools_telemetry uploads on every machine and command. Its
+# extension writes the notice version into MODULE.bazel.lock unconditionally,
+# so that fact stays committed and this flag is what keeps uploads off.
+# https://github.com/aspect-build/tools_telemetry/blob/v0.5.0/extension.bzl#L108
+common --repo_env=DO_NOT_TRACK=1
+
+##
+## Windows specific flags
+##
+
+# Windows symlink support required for rules_rust crate_universe and buildifier
+# Requires Windows Developer Mode to be enabled (Settings -> For Developers)
+# References:
+# - https://bazel.build/configure/windows
+# - https://github.com/bazelbuild/rules_rust/issues/423
+startup --windows_enable_symlinks
+
+##
+## C++ specific flags for default toolchain
+##
+
+# Platform-specific C++ compiler flags
+build:linux --cxxopt=-std=c++23 --cxxopt=-Werror
+build:macos --cxxopt=-std=c++23 --cxxopt=-Werror
+# The two features this repro compares. Neither is on by default.
+build:system_include_paths --features=system_include_paths
+build:system_include_paths --host_features=system_include_paths
+build:external_include_paths --features=external_include_paths
+build:external_include_paths --host_features=external_include_paths
+# Windows configuration: Uses auto-configured MSVC toolchain from Visual Studio Build Tools
+# Disable default_cpp_std feature to avoid D9025 warning about conflicting /std flags
+# Bazel picks the compiler itself: newest VS install from vswhere, then the
+# highest-numbered VC\Tools\MSVC toolset under it, not the install default
+# (BAZEL_VC_FULL_VERSION pins one; CC_CONFIGURE_DEBUG=1 prints the choice).
+# Plain /std:c++23 needs 14.51 (VS2026); older toolsets drop it with D9002 and
+# silently fall back to C++14. Both accept preview, so it stays: switching would
+# make VS2026 a hard requirement for anyone building on Windows.
+build:windows --features=-default_cpp_std --cxxopt=/std:c++23preview --cxxopt=/WX
+# MSVC defaults source and execution charsets to the system codepage; fmt
+# static_asserts against that. Applies to C as well, hence copt not cxxopt.
+build:windows --copt=/utf-8
+# Materialize runfiles as a tree rather than a manifest. A manifest maps files
+# only, so Rlocation cannot resolve a directory -- which the embedded Python
+# runtime does to put library paths on sys.path. Needs the symlink support
+# enabled by the startup flag above.
+build:windows --enable_runfiles
+
+# Hermetic GCC toolchain selection (wiring/rationale in cpp_segment.MODULE.bazel).
+build:gcc_hermetic --extra_toolchains=@gcc_toolchain_x86_64//:cc_toolchain
+build:gcc_hermetic --cxxopt=-Wall
+# The toolchain links via the `gcc` C driver, which does not auto-add the C++
+# runtime; statically link the toolchain's own libstdc++ so C++ binaries resolve
+# std symbols with no libstdc++.so runtime dependency (keeps binaries hermetic).
+# Needed in both configurations: rules_cc_autoconf's feature-probe resolvers are
+# C++ binaries that run as build tools, so they link in the exec configuration,
+# which --linkopt does not reach.
+build:gcc_hermetic --linkopt=-l:libstdc++.a
+build:gcc_hermetic --host_linkopt=-l:libstdc++.a
+# rules_python's prebuilt CPython (libpython*.so) references openpty/forkpty from
+# libutil; the gcc driver doesn't pull it in, so link it from the hermetic sysroot
+# (needed by the cpp_py_* modules; a harmless no-op for non-Python C++ targets).
+build:gcc_hermetic --linkopt=-lutil
+# The toolchain's `gcc` is a bash wrapper that runs realpath/dirname (to locate the
+# execroot) before it sanitizes PATH. cc_* actions get a PATH from Bazel's C++
+# machinery, but rules_rust seeds rustc's env from default_shell_env (empty here),
+# so its gcc-driver link can't find those tools. Give rustc a PATH in both the
+# target (--action_env) and exec (--host_action_env, used to bootstrap the rules_rust
+# process_wrapper) configurations.
+build:gcc_hermetic --action_env=PATH=/usr/local/bin:/usr/bin:/bin
+build:gcc_hermetic --host_action_env=PATH=/usr/local/bin:/usr/bin:/bin
+
+build:gcc_hermetic_debug --config=gcc_hermetic
+build:gcc_hermetic_debug --subcommands # https://bazel.build/docs/user-manual#subcommands
+build:gcc_hermetic_debug --toolchain_resolution_debug='@bazel_tools//tools/cpp:toolchain_type'
+
+# GCC static analysis — the clang-tidy analog. GCC's built-in -fanalyzer, scoped
+# via --per_file_copt to first-party sources only so external BCR deps don't drown
+# the output. -Werror (from build:linux) turns analyzer findings into a CI gate.
+build:gcc_analyzer --config=gcc_hermetic
+build:gcc_analyzer --per_file_copt=modules/.*\.(cc|cpp|cxx|h|hpp)$@-fanalyzer
+
+##
+## Project-wide overrides (committed)
+##
+# Create project.bazelrc to layer repo-wide settings on top of this baseline.
+# Unlike the per-developer user.bazelrc below, it is meant to be committed.
+try-import %workspace%/project.bazelrc
+
+##
+## Per-developer overrides (gitignored)
+##
+try-import %workspace%/user.bazelrc

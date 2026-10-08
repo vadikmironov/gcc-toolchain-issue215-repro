@@ -1,0 +1,10 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+# A first-party library that exposes its headers through `includes`, as many
+# non-Bazel-first projects do. Its header has a warning that -Wall reports.
+cc_library(
+    name = "mylib",
+    hdrs = ["include/mylib/warn.h"],
+    includes = ["include"],
+    visibility = ["//visibility:public"],
+)

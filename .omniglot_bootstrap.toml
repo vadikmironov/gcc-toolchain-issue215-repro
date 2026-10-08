@@ -1,0 +1,41 @@
+# .omniglot_bootstrap.toml — written by the bootstrap tool so a re-bootstrap
+# recovers this repo's selection exactly. Rewritten on each re-bootstrap;
+# edit only if you know what you're doing.
+[repo]
+module_dir = "modules"
+languages = ["cpp"]
+features = []
+bootstrapped_at = "2026-10-08T21:20:25Z"
+starter_revision = "16579d94d13d4a276c6c986b3a25dd98605e2160-dirty"
+
+# Every file the bootstrap tool manages, as it left them.
+[files]
+".bazelignore" = "sha256:745f1eb71be60036f39943121c7aa977b91187d3d6251db90a72d4ca2377956e"
+".bazeliskrc" = "sha256:b1dc531d0085c320cc7ffa46c0fe4ee40fb9d82f6c3ee8d337f96a2fef4700a8"
+".bazelrc" = "sha256:289e6a33ac4079e4cd9669c6460587cd426fec4341ded00a6ab11c70ca60f87a"
+".bazelversion" = "sha256:e6105f63414eedcb2cfd8c390ca29c2f642fe25bbdd143f80565fa852c64b0df"
+".clang-format" = "sha256:981183797a08b719cfdd6cf283f53f54a28f3986d2c97a199d2b0ea5128a0679"
+".clang-tidy" = "sha256:94dc87d191eb4e41c79afd769b9adf003c152d24bcf32b10c7de7400a1f4ac2a"
+".gitignore" = "sha256:36314d946438cb8dbc6e77eee2d1002a1a1aa28195ba8fb8885f2d6c80a93f9e"
+"BUILD" = "sha256:f920a091302b8078fe1b783d75f891819673ecd2409582c984110b2142d61ff0"
+"MODULE.bazel" = "sha256:2b04b3976157b5967645669a09b0bc815ad7150d75aa26895f066bc506cd2cf4"
+"README.md" = "sha256:6daf9943edb0ffcac1afdf16fd8c1190a700dbea711e41ed50874b20b489106d"
+"WORKSPACE.bazel" = "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+"bazel_downloader.cfg" = "sha256:ad303f0ebdd56e4d2631673bebe29e074504c18772388ce451d1d18ab83032e5"
+"tools/cpp/BUILD" = "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+"tools/cpp/MODULE.bazel.lock" = "sha256:5e66cdf177219b12fdba365a2f54f68f8c149a78889a46fca60b37fdaad26231"
+"tools/cpp/cpp_3rd_party_dependencies.MODULE.bazel" = "sha256:257efc22e1e7eb1ec54c1af0f9480803b384693f8d6d671cb3efecb5ebab7cdb"
+"tools/cpp/cpp_segment.MODULE.bazel" = "sha256:85ee7993487fb45104d22761b197f01cb3709575d2f5f984e913af6e5e2b9f19"
+"tools/cpp/foreign_cc/BUILD" = "sha256:43c5d7392149bc5bfe0fbd6e81945e981ac196b7c057d75a5ecdb97234341786"
+"tools/cpp/foreign_cc/cmake_windows_arm64.BUILD" = "sha256:0eafc3aed6ad8fd1990594fbba2cfa1cec6632361106d479c1e5c24009098e0f"
+"tools/cpp/foreign_cc/foreign_cc_tools.MODULE.bazel" = "sha256:2f2625ca22fb9609b1b23d84eaf14b252635674acba3ce567652d7c96aae983f"
+"tools/cpp/foreign_cc/ninja_windows_arm64.BUILD" = "sha256:a83284588551b9de651b3e9736654a2bec66cdf536bace90f1f31d9c88f6fbe5"
+"tools/cpp/llvm_segment.MODULE.bazel" = "sha256:d18613c99fed53c70b62617347351b9837acf05252cefb97951ecbc1c0db8398"
+"tools/cpp/patches/BUILD" = "sha256:f2c6e3961edae5483b5d494181a0f61a510a3604a1a3ec72eb70837054d0b463"
+"tools/cpp/patches/gcc_toolchain_0.13.0_external_include_paths.patch" = "sha256:86dfced2b68866bd19134f467d4c5999bc6a3db8050323e9ca84f4dd6e5de97a"
+"tools/cpp/patches/rules_foreign_cc_0.16.0_postfixed_outputs.patch" = "sha256:cc729d892cfa8090835a9a3ee9f95f8e2fa295d337a375ab1613df117150425e"
+"tools/format/BUILD" = "sha256:730e9bd4d722526ba011d67665a2496e8d1c65e6f0be1442b469f6e8f3f51a3e"
+"tools/setup/BUILD" = "sha256:51057df38faf91122a3bede2cfc27fcff51d45c72a18fa3e6cc83c3e8853224f"
+"tools/setup/download_lib.sh" = "sha256:df1e1eb7c1c681921f1f7b6540ede6ad6ca400215accf530d558c996a35db112"
+"tools/setup/install_bazelisk.sh" = "sha256:eaecf208d34319c041546cd84f85be64af8b5c54f648dd2f3c442c47be79a3f2"
+"user.bazelrc.template" = "sha256:86d7bcabdb72790a4dfc4e4bdb2ca4b0e013d1cd6aa2b0bed67eb2d6fde452dd"
