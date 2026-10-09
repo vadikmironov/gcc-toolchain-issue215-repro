@@ -6,8 +6,8 @@ what `system_include_paths` and `external_include_paths` do with the hermetic GC
 toolchain on Bazel 9.
 
 Versions: Bazel 9.3.0, rules_cc 0.2.26, gcc_toolchain 0.13.0 (GCC 15.2.0), abseil-cpp
-20260817.0. `--config=gcc_hermetic` selects the toolchain and adds `-Wall`; `.bazelrc`
-adds `-Werror`. The patch
+20260817.0. `.bazelrc` selects the hermetic GCC toolchain (`--config=gcc_hermetic`, which
+adds `-Wall`) for every build, and adds `-Werror`. The patch
 `tools/cpp/patches/gcc_toolchain_0.13.0_external_include_paths.patch` adds the
 `external_include_paths` feature of
 [f0rmiga/gcc-toolchain#242](https://github.com/f0rmiga/gcc-toolchain/pull/242) to the
@@ -22,9 +22,9 @@ The targets in `modules/app`:
 - `absl_quote` is the same with `#include "absl/strings/ascii.h"`.
 
 ```shell
-bazel build --config=gcc_hermetic //modules/app:<target>
-bazel build --config=gcc_hermetic --config=system_include_paths //modules/app:<target>
-bazel build --config=gcc_hermetic --config=external_include_paths //modules/app:<target>
+bazel build --keep_going //modules/app:all
+bazel build --keep_going --config=system_include_paths //modules/app:all
+bazel build --keep_going --config=external_include_paths //modules/app:all
 ```
 
 | Run | `own_header` | `absl_angle` | `absl_quote` |

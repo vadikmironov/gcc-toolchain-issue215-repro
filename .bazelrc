@@ -59,6 +59,8 @@ startup --windows_enable_symlinks
 # Platform-specific C++ compiler flags
 build:linux --cxxopt=-std=c++23 --cxxopt=-Werror
 build:macos --cxxopt=-std=c++23 --cxxopt=-Werror
+# The repro is about gcc_toolchain, so its hermetic GCC is the default here.
+build --config=gcc_hermetic
 # The two features this repro compares. Neither is on by default.
 build:system_include_paths --features=system_include_paths
 build:system_include_paths --host_features=system_include_paths
